@@ -1,0 +1,51 @@
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<title>Runescape Grand Exchange Tracker</title>
+</head>
+<body>
+<table id="main-table">
+<tr>
+	<th>ID</th>
+	<th>Amount</th>
+	<th>Item Name</th>
+	<th>Bought/Sold</th>
+	<th>Date</th>
+</tr>
+</table>
+
+<script type="text/javascript">
+
+console.log("Starting to generate table..");
+<!-- Table generation -->
+var data = JSON.parse(localStorage.getItem("geData"));
+data = {
+	"item": {
+		"ID": "1",
+		"Amount": "123",
+		"Name": "Dragon Bones",
+		"BORS": "Bought",
+		"Date": "01.12.2017"
+	},
+};
+
+console.log(data);
+for(var entry in data){
+	entry = data[entry];
+	console.log(entry);
+	var tr = $(document.createElement("tr")).appendTo("#main-table");
+	var td = $(document.createElement("td"));
+	td.clone().html(entry.ID).appendTo(tr);
+	td.clone().html(entry.Amount).appendTo(tr);
+	td.clone().html(entry.Name).appendTo(tr);
+	td.clone().html(entry.BORS).appendTo(tr);
+	td.clone().html(entry.Date).appendTo(tr);
+}
+
+console.log($("table"));
+$("table").css({'border': "1px solid black", "padding": "10px"});
+$("table").find("td").css({'border': "1px solid black", "padding": "10px"});
+$("table").find("th").css({'border': "2px solid grey", "padding": "10px"});
+</script>
+
+
+</body>
