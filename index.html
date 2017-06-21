@@ -3,6 +3,7 @@
 <title>Runescape Grand Exchange Tracker</title>
 </head>
 <body>
+<div style="width:50%; float:left">
 <table id="main-table">
 <tr>
 	<th>ID</th>
@@ -12,39 +13,88 @@
 	<th>Date</th>
 </tr>
 </table>
+</div>
+<div style="width: 50%; float:left">
+	<form id="newItem">
+		<table>
+			<tr>
+				<td>Amount of Items purchased</td>
+				<td><input type="text" name="amount"></td>
+			</tr>
+			<tr>
+				<td><span>Name of the Item purchased</span></td>
+				<td><input type="text" name="itemName"></td>
+			</tr>
+			<tr>
+				<td>Bought or Sold?</td>
+				<td style="display:flex; justify-content: space-around">
+					<div>
+						<label>
+							<input type="radio" name="bors" value="Bought">Bought
+						</label>
+
+					</div>
+					<div>
+						<label>
+							<input type="radio" name="bors" value="Sold">Sold
+						</label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input style="width: 100%" type="submit" value="Confirm"></td>
+			</tr>
+		</table>
+	</form>
+</div>
 
 <script type="text/javascript">
 
-console.log("Starting to generate table..");
-<!-- Table generation -->
-var data = JSON.parse(localStorage.getItem("geData"));
-data = {
-	"item": {
-		"ID": "1",
-		"Amount": "123",
-		"Name": "Dragon Bones",
-		"BORS": "Bought",
-		"Date": "01.12.2017"
-	},
-};
+$(document).ready(function(){
+	console.log("Starting to generate table..");
+	<!-- Table generation -->
+	var data = JSON.parse(localStorage.getItem("geData"));
+	data = {
+		"item": {
+			"ID": "1",
+			"Amount": "123",
+			"Name": "Dragon Bones",
+			"BORS": "Bought",
+			"Date": "01.12.2017"
+		},
+	};
 
-console.log(data);
-for(var entry in data){
-	entry = data[entry];
-	console.log(entry);
-	var tr = $(document.createElement("tr")).appendTo("#main-table");
-	var td = $(document.createElement("td"));
-	td.clone().html(entry.ID).appendTo(tr);
-	td.clone().html(entry.Amount).appendTo(tr);
-	td.clone().html(entry.Name).appendTo(tr);
-	td.clone().html(entry.BORS).appendTo(tr);
-	td.clone().html(entry.Date).appendTo(tr);
-}
+	console.log(data);
+	for(var entry in data){
+		entry = data[entry];
+		console.log(entry);
+		var tr = $(document.createElement("tr")).appendTo("#main-table");
+		var td = $(document.createElement("td"));
+		td.clone().html(entry.ID).appendTo(tr);
+		td.clone().html(entry.Amount).appendTo(tr);
+		td.clone().html(entry.Name).appendTo(tr);
+		td.clone().html(entry.BORS).appendTo(tr);
+		td.clone().html(entry.Date).appendTo(tr);
+	}
 
-console.log($("table"));
-$("table").css({'border': "1px solid black", "padding": "10px"});
-$("table").find("td").css({'border': "1px solid black", "padding": "10px"});
-$("table").find("th").css({'border': "2px solid grey", "padding": "10px"});
+	$("table").css({'border': "1px solid black", "padding": "10px"});
+	$("table").find("td").css({'border': "1px solid black", "padding": "10px"});
+	$("table").find("th").css({'border': "2px solid grey", "padding": "10px"});
+});
+
+$("#newItem").on("submit", function(e){
+	e.preventDefault();
+	alert("Submitted");
+	var form = $("#newItem");
+	var amount = form.find("input[name=amount]");
+	var name = form.find("inptu[name=itemName]");
+	console.log(form);
+	console.log(amount);
+	console.log(name);
+
+
+});
 </script>
 
 
