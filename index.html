@@ -1,5 +1,5 @@
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="./js/jquery.js"></script>
 <title>Runescape Grand Exchange Tracker</title>
 </head>
 <body>
@@ -19,7 +19,7 @@
 		<table>
 			<tr>
 				<td>Amount of Items purchased</td>
-				<td><input type="text" name="amount"></td>
+				<td><input type="text" name="itemAmount"></td>
 			</tr>
 			<tr>
 				<td><span>Name of the Item purchased</span></td>
@@ -87,12 +87,48 @@ $("#newItem").on("submit", function(e){
 	e.preventDefault();
 	alert("Submitted");
 	var form = $("#newItem");
-	var amount = form.find("input[name=amount]");
-	var name = form.find("inptu[name=itemName]");
+	var amount = form.find("input[name=itemAmount]").val();
+	var name = form.find("input[name=itemName]").val();
+	var bors = form.find("input[name=bors]").val();
 	console.log(form);
 	console.log(amount);
 	console.log(name);
+	if(	
+		amount == "" || 
+		amount == undefined || 
+		name == "" || 
+		name == undefined ||
+		bors == "" ||
+		bors == undefined
+	){
+		return;
+	}
+	amount = amount.replace(/k/i, "000");
+	amount = amount.replace(/m/i, "000000");
+	amount = amount.replace(/\D+/, "");
+	amount = parseInt(amount);
+	if(typeof(amount) != "number"){
+		console.log("Something went wrong when trying to convert amount into a number!");
+		console.log("Type: ", typeof amount);
+		console.log("VALUE: " + amount);
+	}
+	var data = JSON.parse(localStorage.getItem("data"));
 
+	var d = new Date();
+	var mon = d.getMonth() + 1;
+	if(mon < 10){mon = "0" + mon;}
+	var day = d.getDate();
+	if(day < 10){day = "0" + day;}
+	var dateString = d.getFullYear() + "-" + mon + "-" + day;
+	var newObj = {};
+	newObj["Amount"] = amount;
+	newObj["Name"] = name;
+	newObj["Date"] = dateString;
+	newObj["BORS"] = bors;
+
+console.log(newObj);
+console.log(JSON.stringify(newObj));
+	localStorage.setItem("data", JSON.stringify(data));
 
 });
 </script>
