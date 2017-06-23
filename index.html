@@ -89,7 +89,7 @@ $("#newItem").on("submit", function(e){
 	var form = $("#newItem");
 	var amount = form.find("input[name=itemAmount]").val();
 	var name = form.find("input[name=itemName]").val();
-	var bors = form.find("input[name=bors]").val();
+	var bors = form.find("input[name=bors]:checked").val();
 	console.log(form);
 	console.log(amount);
 	console.log(name);
