@@ -4,13 +4,14 @@
 </head>
 <body>
 <div style="width:50%; float:left">
-<table id="main-table">
-<tr>
+<table id="mainTable">
+<tr id="headLines">
 	<th>ID</th>
 	<th>Amount</th>
 	<th>Item Name</th>
 	<th>Bought/Sold</th>
 	<th>Date</th>
+	<th>Functions</th>
 </tr>
 </table>
 </div>
@@ -50,49 +51,40 @@
 </div>
 
 <script type="text/javascript">
+var data = JSON.parse(localStorage.getItem("data"));
+
+var DATA_SAVED = true;
+
+function SaveData(){
+	localStorage.setItem("data", JSON.stringify(data));
+}
+
+var myTimer = setInterval(function(){
+	if(!document.hasFocus() && DATA_SAVED = false){
+		SaveData();
+		DATA_SAVED = true;
+	}
+	else if(document.hasFocus()){
+		DATA_SAVED = false;	
+	}
+}, 1000);
+
+if(data === undefined){
+	data = {"entries": []};
+}
 
 $(document).ready(function(){
-	console.log("Starting to generate table..");
-	<!-- Table generation -->
-	var data = JSON.parse(localStorage.getItem("geData"));
-	data = {
-		"item": {
-			"ID": "1",
-			"Amount": "123",
-			"Name": "Dragon Bones",
-			"BORS": "Bought",
-			"Date": "01.12.2017"
-		},
-	};
-
 	console.log(data);
-	for(var entry in data){
-		entry = data[entry];
-		console.log(entry);
-		var tr = $(document.createElement("tr")).appendTo("#main-table");
-		var td = $(document.createElement("td"));
-		td.clone().html(entry.ID).appendTo(tr);
-		td.clone().html(entry.Amount).appendTo(tr);
-		td.clone().html(entry.Name).appendTo(tr);
-		td.clone().html(entry.BORS).appendTo(tr);
-		td.clone().html(entry.Date).appendTo(tr);
-	}
-
-	$("table").css({'border': "1px solid black", "padding": "10px"});
-	$("table").find("td").css({'border': "1px solid black", "padding": "10px"});
-	$("table").find("th").css({'border': "2px solid grey", "padding": "10px"});
+	BuildTable(data);
 });
 
 $("#newItem").on("submit", function(e){
+	console.log(data);
 	e.preventDefault();
-	alert("Submitted");
 	var form = $("#newItem");
 	var amount = form.find("input[name=itemAmount]").val();
 	var name = form.find("input[name=itemName]").val();
 	var bors = form.find("input[name=bors]:checked").val();
-	console.log(form);
-	console.log(amount);
-	console.log(name);
 	if(	
 		amount == "" || 
 		amount == undefined || 
@@ -101,6 +93,7 @@ $("#newItem").on("submit", function(e){
 		bors == "" ||
 		bors == undefined
 	){
+		alert("An error occured..");
 		return;
 	}
 	amount = amount.replace(/k/i, "000");
@@ -112,7 +105,6 @@ $("#newItem").on("submit", function(e){
 		console.log("Type: ", typeof amount);
 		console.log("VALUE: " + amount);
 	}
-	var data = JSON.parse(localStorage.getItem("data"));
 
 	var d = new Date();
 	var mon = d.getMonth() + 1;
@@ -120,17 +112,60 @@ $("#newItem").on("submit", function(e){
 	var day = d.getDate();
 	if(day < 10){day = "0" + day;}
 	var dateString = d.getFullYear() + "-" + mon + "-" + day;
+
 	var newObj = {};
-	newObj["Amount"] = amount;
-	newObj["Name"] = name;
-	newObj["Date"] = dateString;
-	newObj["BORS"] = bors;
-
-console.log(newObj);
-console.log(JSON.stringify(newObj));
+	newObj["Amount"] 	= amount;
+	newObj["Name"] 		= name;
+	newObj["Date"] 		= dateString;
+	newObj["BORS"] 		= bors;
+	newObj['ID']   		= data.entries.length + 1;
+	newObj['Enabled'] 	= true;
+	data.entries.push(newObj);
+	BuildTable(data);
 	localStorage.setItem("data", JSON.stringify(data));
-
+	
 });
+
+function BuildTable(d){
+	console.log("Starting to generate table..");
+	<!-- Table generation -->
+	console.log(d);
+	var table = $("#mainTable");
+	table.find("tr").each(function(index, obj){ //Clear table except top row
+		if(index > 0){
+			table.find(obj).remove();
+		}
+	});
+	for(var i=d.entries.length - 1;i>=0;i--){
+		var entry = data.entries[i];
+		if(entry.Enabled){
+			console.log(entry);
+	
+			var tr = $(document.createElement("tr")).appendTo(table);
+			var td = $(document.createElement("td"));
+			td.clone().html(entry.ID).appendTo(tr);
+			td.clone().html(entry.Amount).appendTo(tr);
+			td.clone().html(entry.Name).appendTo(tr);
+			td.clone().html(entry.BORS).appendTo(tr);
+			td.clone().html(entry.Date).appendTo(tr);
+			var removeButton = $(document.createElement("button"))
+			.attr("id", "button-remove-" + entry.ID)
+			.text("Remove")
+			.on("click", function(){
+				var ent = data.entries[$(this).attr("id").match(/(\d+)/)[1] - 1];
+				ent.Enabled = false;
+				console.log(data, ent);
+				localStorage.setItem("data", JSON.stringify(data));
+				BuildTable(data);
+			})
+			.appendTo(td.clone().appendTo(tr));
+		}
+	}
+
+	$("table").css({'border': "1px solid black", "padding": "10px"});
+	$("table").find("td").css({'border': "1px solid black", "padding": "10px"});
+	$("table").find("th").css({'border': "2px solid grey", "padding": "10px"});
+}
 </script>
 
 
