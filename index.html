@@ -3,20 +3,9 @@
 <title>Runescape Grand Exchange Tracker</title>
 </head>
 <body>
-<div style="width:50%; float:left">
-<table id="mainTable">
-<tr id="headLines">
-	<th>ID</th>
-	<th>Amount</th>
-	<th>Item Name</th>
-	<th>Bought/Sold</th>
-	<th>Date</th>
-	<th>Functions</th>
-</tr>
-</table>
-</div>
-<div style="width: 50%; float:left">
-	<form id="newItem">
+
+<div style="margin: 15px; border-bottom: 5px solid blue; width: auto">
+	<form id="newItem" style="border: 1px solid grey">
 		<table>
 			<tr>
 				<td>Amount of Items purchased</td>
@@ -50,8 +39,30 @@
 	</form>
 </div>
 
+
+
+
+<div style="margin: 15px">
+<table id="mainTable">
+<tr id="headLines">
+	<th>ID</th>
+	<th>Amount</th>
+	<th>Item Name</th>
+	<th>Bought/Sold</th>
+	<th>Date</th>
+	<th>Functions</th>
+</tr>
+</table>
+</div>
 <script type="text/javascript">
-var data = JSON.parse(localStorage.getItem("data"));
+var data, table;
+try{
+	data = JSON.parse(localStorage.getItem("data"));
+}
+catch(ex){
+	//Data does not exist!
+	data = {"entries": []};
+}
 
 var DATA_SAVED = true;
 
@@ -60,7 +71,7 @@ function SaveData(){
 }
 
 var myTimer = setInterval(function(){
-	if(!document.hasFocus() && DATA_SAVED = false){
+	if(!document.hasFocus() && !DATA_SAVED){
 		SaveData();
 		DATA_SAVED = true;
 	}
@@ -69,11 +80,9 @@ var myTimer = setInterval(function(){
 	}
 }, 1000);
 
-if(data === undefined){
-	data = {"entries": []};
-}
-
 $(document).ready(function(){
+	$("#newItem").find("table").find("td").css("padding", "10px");
+	table = $("#mainTable");
 	console.log(data);
 	BuildTable(data);
 });
@@ -111,60 +120,64 @@ $("#newItem").on("submit", function(e){
 	if(mon < 10){mon = "0" + mon;}
 	var day = d.getDate();
 	if(day < 10){day = "0" + day;}
-	var dateString = d.getFullYear() + "-" + mon + "-" + day;
+	var hour = d.getHours();
+	if(hour < 10){hour = "0" + hour;}
+	var minute = d.getMinutes();
+	if(minute < 10){minute = "0" + minute;}
+	var second = d.getSeconds();
+	if(second < 10){second = "0" + second;}
+	var dateString = d.getFullYear() + "-" + mon + "-" + day + " " + hour + ":" + minute + ":" + second;
+
+	if(!data.Index){data.Index = 0;}
+	data.Index++;
 
 	var newObj = {};
 	newObj["Amount"] 	= amount;
 	newObj["Name"] 		= name;
 	newObj["Date"] 		= dateString;
 	newObj["BORS"] 		= bors;
-	newObj['ID']   		= data.entries.length + 1;
-	newObj['Enabled'] 	= true;
+	newObj['ID']   		= data.Index;
 	data.entries.push(newObj);
-	BuildTable(data);
-	localStorage.setItem("data", JSON.stringify(data));
-	
+
+	AddRow(newObj);
 });
+
+function AddRow(obj){
+	var tr = $(document.createElement("tr")).insertAfter(table.children()[0]);
+	var td = $(document.createElement("td")).css({"border": "1px solid black", "padding": "10px"});
+	td.clone().html(obj.ID).appendTo(tr);
+	td.clone().html(obj.Amount).appendTo(tr);
+	td.clone().html(obj.Name).appendTo(tr);
+	td.clone().html(obj.BORS).appendTo(tr);
+	td.clone().html(obj.Date).appendTo(tr);
+	var removeButton = $(document.createElement("button"))
+	.attr("id", "button-remove-" + obj.ID)
+	.text("Remove")
+	.on("click", function(){
+		console.log($(this).attr("id").match(/(\d+)/)[1] - 1);
+		console.log(data.entries.splice($(this).attr("id").match(/(\d+)/)[1] - 1, 1));
+		SaveData();
+		$(this).parent().parent().remove();
+	})
+	.appendTo(td.clone().appendTo(tr));
+
+}
 
 function BuildTable(d){
 	console.log("Starting to generate table..");
 	<!-- Table generation -->
-	console.log(d);
-	var table = $("#mainTable");
 	table.find("tr").each(function(index, obj){ //Clear table except top row
 		if(index > 0){
 			table.find(obj).remove();
 		}
 	});
 	for(var i=d.entries.length - 1;i>=0;i--){
-		var entry = data.entries[i];
-		if(entry.Enabled){
-			console.log(entry);
-	
-			var tr = $(document.createElement("tr")).appendTo(table);
-			var td = $(document.createElement("td"));
-			td.clone().html(entry.ID).appendTo(tr);
-			td.clone().html(entry.Amount).appendTo(tr);
-			td.clone().html(entry.Name).appendTo(tr);
-			td.clone().html(entry.BORS).appendTo(tr);
-			td.clone().html(entry.Date).appendTo(tr);
-			var removeButton = $(document.createElement("button"))
-			.attr("id", "button-remove-" + entry.ID)
-			.text("Remove")
-			.on("click", function(){
-				var ent = data.entries[$(this).attr("id").match(/(\d+)/)[1] - 1];
-				ent.Enabled = false;
-				console.log(data, ent);
-				localStorage.setItem("data", JSON.stringify(data));
-				BuildTable(data);
-			})
-			.appendTo(td.clone().appendTo(tr));
-		}
+		AddRow(data.entries[i]);
 	}
 
-	$("table").css({'border': "1px solid black", "padding": "10px"});
-	$("table").find("td").css({'border': "1px solid black", "padding": "10px"});
-	$("table").find("th").css({'border': "2px solid grey", "padding": "10px"});
+	$(table).css({'border': "1px solid black", "padding": "10px"});
+	$(table).find("td").css({'border': "1px solid black", "padding": "10px"});
+	$(table).find("th").css({'border': "2px solid grey", "padding": "10px"});
 }
 </script>
 
