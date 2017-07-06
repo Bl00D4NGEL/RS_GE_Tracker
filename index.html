@@ -47,18 +47,40 @@
 
 
 <div style="margin: 15px">
-<table id="mainTable" style="width: 100%">
-<tr id="headLines">
-	<th>ID</th>
-	<th>Amount</th>
-	<th>Item Name</th>
-	<th>Total Price</th>
-	<th>Avg Unit Price</th>
-	<th>Bought/Sold</th>
-	<th>Date</th>
-	<th>Functions</th>
-</tr>
-</table>
+
+	<div id="menu">
+		<div id="divAll" style="float: left; width: 10%; padding: 10px; margin-bottom: 10px; background-color: lime; border: 1px solid grey;">
+			All
+		</div>
+		<div style="float: left; margin: 10px 0px">&nbsp;</div>
+		<div id="divLinked" style="float: left; width: 10%; padding: 10px; margin-bottom: 10px; background-color: lime; border: 1px solid grey;">
+			Linked
+		</div>
+		<div>
+			<table id="mainTable" style="width: 100%">
+				<tr class="headLines">
+					<th>ID</th>
+					<th>Amount</th>
+					<th>Item Name</th>
+					<th>Total Price</th>
+					<th>Avg Unit Price</th>
+					<th>Bought/Sold</th>
+					<th>Date</th>
+					<th>Functions</th>
+				</tr>
+			</table>
+			<table id="linkedTable" style="width: 100%">
+				<tr class="headLines">
+					<th>Amount</th>
+					<th>Item Name</th>
+					<th>Buy Cost</th>
+					<th>Sell Cost</th>
+					<th>Profit</th>
+					<th>Profit / Unit</th>
+				</tr>
+			</table>
+		</div>
+	</div>
 </div>
 <script type="text/javascript">
 var data, table;
@@ -180,8 +202,78 @@ function AddRow(obj){
 	td.clone().html(obj.BORS).appendTo(tr);
 	td.clone().html(obj.Date).appendTo(tr);
 	var functionsTd  = td.clone().appendTo(tr);
+	var remButton = BuildDeleteButton(obj.ID);
+	remButton.appendTo(functionsTd);
+
+	var linkButton = BuildLinkButton(obj.ID);
+	linkButton.appendTo(functionsTd);
+
+}
+
+function BuildLinkButton(ID){
+	var linkButton = $(document.createElement("button"))
+	.attr("id", "button-link-" + ID)
+	.css("margin", "5px")
+	.text("Link")
+	.on("click", function(){
+		var id = $(this).attr("id").match(/(\d+)$/);
+		if(id){id=id[1];}
+		else{return;}
+		var item = $(this).parent().parent().children()[2].innerHTML;
+		var bors = $(this).parent().parent().children()[5].innerHTML;
+		if($(this).text() == "Link"){
+			var select = $(document.createElement("select")).attr("id", "linkSelect");
+			for(var i=0;i<data.entries.length;i++){
+				if(data.entries[i].Name == item && data.entries[i].ID != id && data.entries[i].BORS != bors){
+					var e = data.entries[i];
+					console.log("MATCH: ", e);
+					var opt = $(document.createElement("option")).val(e.ID)
+					.html(e.ID + " | x" + e.Amount + " (" + e.Cost + ") " + e.Name)
+					.appendTo(select);
+				}
+			}
+			if(select.children().length > 0){
+				select.insertAfter($(this));
+				$(this).text("Confirm");
+			}
+			else{
+				alert("No items to link!");
+				console.log("No other items found!");
+			}
+			console.log("ITEM: " + item + " | ID: " + id);
+		}
+		else if($(this).text() == "Confirm"){
+			var linkId = $("#linkSelect").find(":selected").val();
+			var counter = 0;
+			console.log("LINKED ID:" , linkId);
+			for(var i=0;i<data.entries.length;i++){
+				if(data.entries[i].ID == linkId){
+					data.entries[i].Linked = id;
+					counter++;
+				}
+				else if(data.entries[i].ID == id){
+					data.entries[i].Linked = linkId;
+					counter++;
+				}
+			}
+			if(counter == 2){
+				alert("Linked " + linkId + " to " + id);
+				$(this).text("Link");
+				$("#linkSelect").remove();
+			}
+			else{
+				alert("Something went wrong when linking " + linkId + " to " + id);
+				$(this).text("Link");
+				$("#linkSelect").remove();
+			}
+		}
+	});
+	return linkButton;
+}
+
+function BuildDeleteButton(ID){
 	var removeButton = $(document.createElement("button"))
-	.attr("id", "button-remove-" + obj.ID)
+	.attr("id", "button-remove-" + ID)
 	.css("margin", "5px")
 	.text("Remove")
 	.on("click", function(){
@@ -196,20 +288,8 @@ function AddRow(obj){
 		}
 		SaveData();
 		$(this).parent().parent().remove();
-	})
-	.appendTo(functionsTd);
-	var linkButton = $(document.createElement("button"))
-	.attr("id", "button-link-" + obj.ID)
-	.css("margin", "5px")
-	.text("Link")
-	.on("click", function(){
-		var id = $(this).attr("id").match(/(\d+)$/);
-		if(id){id=id[1];}
-		else{return;}
-		var item = $(this).parent().parent()
-	})
-	.appendTo(functionsTd);
-
+	});
+	return removeButton;
 }
 
 function BuildTable(d){
