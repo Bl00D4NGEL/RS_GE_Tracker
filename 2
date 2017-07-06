@@ -16,10 +16,6 @@
 				<td><input type="text" name="itemName"></td>
 			</tr>
 			<tr>
-				<td><span>Total price</span></td>
-				<td><input type="text" name="cost"></td>
-			</tr>
-			<tr>
 				<td>Bought or Sold?</td>
 				<td style="display:flex; justify-content: space-around">
 					<div>
@@ -47,13 +43,11 @@
 
 
 <div style="margin: 15px">
-<table id="mainTable" style="width: 100%">
+<table id="mainTable">
 <tr id="headLines">
 	<th>ID</th>
 	<th>Amount</th>
 	<th>Item Name</th>
-	<th>Total Price</th>
-	<th>Avg Unit Price</th>
 	<th>Bought/Sold</th>
 	<th>Date</th>
 	<th>Functions</th>
@@ -77,7 +71,6 @@ if(data == undefined){
 var DATA_SAVED = true;
 
 function SaveData(){
-	console.log("Saving..." , data);
 	localStorage.setItem("data", JSON.stringify(data));
 }
 
@@ -98,7 +91,7 @@ $(document).ready(function(){
 });
 window.addEventListener("unload", function(){
 	console.log("Unload trigger!");
-	SaveData();
+	SaveData()
 });
 
 $("#newItem").on("submit", function(e){
@@ -107,7 +100,6 @@ $("#newItem").on("submit", function(e){
 	var form = $("#newItem");
 	var amount = form.find("input[name=itemAmount]").val();
 	var name = form.find("input[name=itemName]").val();
-	var cost = form.find("input[name=cost]").val();
 	var bors = form.find("input[name=bors]:checked").val();
 	if(	
 		amount == "" || 
@@ -115,9 +107,7 @@ $("#newItem").on("submit", function(e){
 		name == "" || 
 		name == undefined ||
 		bors == "" ||
-		bors == undefined ||
-		cost == "" ||
-		cost == undefined
+		bors == undefined
 	){
 		alert("An error occured..");
 		return;
@@ -126,19 +116,10 @@ $("#newItem").on("submit", function(e){
 	amount = amount.replace(/m/i, "000000");
 	amount = amount.replace(/\D+/, "");
 	amount = parseInt(amount);
-	cost = cost.replace(/k/i, "000");
-	cost = cost.replace(/m/i, "000000");
-	cost = cost.replace(/\D+/, "");
-	cost = parseInt(cost);
 	if(typeof(amount) != "number"){
 		console.log("Something went wrong when trying to convert amount into a number!");
 		console.log("Type: ", typeof amount);
 		console.log("VALUE: " + amount);
-	}
-	if(typeof(cost) != "number"){
-		console.log("Something went wrong when trying to convert cost into a number!");
-		console.log("Type: ", typeof cost);
-		console.log("VALUE: " + cost);
 	}
 
 	var d = new Date();
@@ -160,7 +141,6 @@ $("#newItem").on("submit", function(e){
 	var newObj = {};
 	newObj["Amount"] 	= amount;
 	newObj["Name"] 		= name;
-	newObj["Cost"]		= cost;
 	newObj["Date"] 		= dateString;
 	newObj["BORS"] 		= bors;
 	newObj['ID']   		= data.Index;
@@ -175,40 +155,16 @@ function AddRow(obj){
 	td.clone().html(obj.ID).appendTo(tr);
 	td.clone().html(obj.Amount).appendTo(tr);
 	td.clone().html(obj.Name).appendTo(tr);
-	td.clone().html(obj.Cost).appendTo(tr);
-	td.clone().html(Math.floor(obj.Cost / obj.Amount)).appendTo(tr);
 	td.clone().html(obj.BORS).appendTo(tr);
 	td.clone().html(obj.Date).appendTo(tr);
-	var functionsTd  = td.clone().appendTo(tr);
 	var removeButton = $(document.createElement("button"))
 	.attr("id", "button-remove-" + obj.ID)
-	.css("margin", "5px")
 	.text("Remove")
 	.on("click", function(){
-		var id = $(this).attr("id").match(/(\d+)$/);
-		if(id){id=id[1];}
-		else{return;}
-		for(var i=0;i<data.entries.length;i++){
-			if(data.entries[i].ID == id){
-				data.entries.splice(i, 1);
-				i=data.entries.length;
-			}
-		}
 		SaveData();
 		$(this).parent().parent().remove();
 	})
-	.appendTo(functionsTd);
-	var linkButton = $(document.createElement("button"))
-	.attr("id", "button-link-" + obj.ID)
-	.css("margin", "5px")
-	.text("Link")
-	.on("click", function(){
-		var id = $(this).attr("id").match(/(\d+)$/);
-		if(id){id=id[1];}
-		else{return;}
-		var item = $(this).parent().parent()
-	})
-	.appendTo(functionsTd);
+	.appendTo(td.clone().appendTo(tr));
 
 }
 
@@ -220,7 +176,7 @@ function BuildTable(d){
 		}
 	});
 	for(var i=d.entries.length - 1;i>=0;i--){
-		AddRow(d.entries[i]);
+		AddRow(data.entries[i]);
 	}
 
 	$(table).css({'border': "1px solid black", "padding": "10px"});
