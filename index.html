@@ -1,18 +1,21 @@
 <head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="./css/main.css">
 <script src="./js/jquery.js"></script>
 <title>Runescape Grand Exchange Tracker</title>
 </head>
 <body>
 
 <div style="margin: 15px; border-bottom: 5px solid blue; width: auto">
+	<div>
 	<form id="newItem" style="border: 1px solid grey">
 		<table>
 			<tr>
-				<td>Amount of Items purchased</td>
+				<td>Amount of items purchased</td>
 				<td><input type="text" name="itemAmount"></td>
 			</tr>
 			<tr>
-				<td><span>Name of the Item purchased</span></td>
+				<td><span>Name of the item purchased</span></td>
 				<td><input type="text" name="itemName"></td>
 			</tr>
 			<tr>
@@ -41,6 +44,7 @@
 			</tr>
 		</table>
 	</form>
+	</div>
 </div>
 
 
@@ -49,19 +53,23 @@
 <div style="margin: 15px">
 
 	<div id="menu">
-		<div id="divAll" style="float: left; width: 10%; padding: 10px; margin-bottom: 10px; background-color: lime; border: 1px solid grey;">
+		<div id="divAll" class="menuButton active">
 			All
 		</div>
 		<div style="float: left; margin: 10px 0px">&nbsp;</div>
-		<div id="divLinked" style="float: left; width: 10%; padding: 10px; margin-bottom: 10px; background-color: lime; border: 1px solid grey;">
+		<div id="divLinked" class="menuButton">
 			Linked
+		</div>
+		<div style="float: left; margin: 10px 0px">&nbsp;</div>
+		<div id="divSearch" class="menuButton">
+			Search
 		</div>
 		<div>
 			<table id="mainTable" style="width: 100%">
 				<tr class="headLines">
 					<th>ID</th>
-					<th>Amount</th>
 					<th>Item Name</th>
+					<th>Amount</th>
 					<th>Total Price</th>
 					<th>Avg Unit Price</th>
 					<th>Bought/Sold</th>
@@ -71,243 +79,31 @@
 			</table>
 			<table id="linkedTable" style="width: 100%">
 				<tr class="headLines">
+					<th>Item</th>
 					<th>Amount</th>
-					<th>Item Name</th>
 					<th>Buy Cost</th>
 					<th>Sell Cost</th>
-					<th>Profit</th>
+					<th>Total Profit</th>
 					<th>Profit / Unit</th>
 				</tr>
 			</table>
-		</div>
+
+			<form id="searchItem" style="border: 1px solid grey; display: none;">
+				<table style="width: 100%">
+					<tr>
+						<td>Name of the item you are looking for?</td>
+						<td><input type="text" name="itemSearch"></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="submit" value="Search"></td>
+					</tr>
+				</table>
+			</form>
+
 	</div>
 </div>
-<script type="text/javascript">
-var data, table;
-try{
-	data = JSON.parse(localStorage.getItem("data"));
-}
-catch(ex){
-	console.log("Cannot parse localstorage", ex);
-	//Data does not exist!
-}
-
-if(data == undefined){
-	data = {"entries": []};
-}
-
-var DATA_SAVED = true;
-
-function SaveData(){
-	console.log("Saving..." , data);
-	localStorage.setItem("data", JSON.stringify(data));
-}
-
-var myTimer = setInterval(function(){
-	if(!document.hasFocus() && !DATA_SAVED){
-		SaveData();
-		DATA_SAVED = true;
-	}
-	else if(document.hasFocus()){
-		DATA_SAVED = false;	
-	}
-}, 1000);
-
-$(document).ready(function(){
-	$("#newItem").find("table").find("td").css("padding", "10px");
-	table = $("#mainTable");
-	BuildTable(data);
-});
-window.addEventListener("unload", function(){
-	console.log("Unload trigger!");
-	SaveData();
-});
-
-$("#newItem").on("submit", function(e){
-	console.log(data);
-	e.preventDefault();
-	var form = $("#newItem");
-	var amount = form.find("input[name=itemAmount]").val();
-	var name = form.find("input[name=itemName]").val();
-	var cost = form.find("input[name=cost]").val();
-	var bors = form.find("input[name=bors]:checked").val();
-	if(	
-		amount == "" || 
-		amount == undefined || 
-		name == "" || 
-		name == undefined ||
-		bors == "" ||
-		bors == undefined ||
-		cost == "" ||
-		cost == undefined
-	){
-		alert("An error occured..");
-		return;
-	}
-	amount = amount.replace(/k/i, "000");
-	amount = amount.replace(/m/i, "000000");
-	amount = amount.replace(/\D+/, "");
-	amount = parseInt(amount);
-	cost = cost.replace(/k/i, "000");
-	cost = cost.replace(/m/i, "000000");
-	cost = cost.replace(/\D+/, "");
-	cost = parseInt(cost);
-	if(typeof(amount) != "number"){
-		console.log("Something went wrong when trying to convert amount into a number!");
-		console.log("Type: ", typeof amount);
-		console.log("VALUE: " + amount);
-	}
-	if(typeof(cost) != "number"){
-		console.log("Something went wrong when trying to convert cost into a number!");
-		console.log("Type: ", typeof cost);
-		console.log("VALUE: " + cost);
-	}
-
-	var d = new Date();
-	var mon = d.getMonth() + 1;
-	if(mon < 10){mon = "0" + mon;}
-	var day = d.getDate();
-	if(day < 10){day = "0" + day;}
-	var hour = d.getHours();
-	if(hour < 10){hour = "0" + hour;}
-	var minute = d.getMinutes();
-	if(minute < 10){minute = "0" + minute;}
-	var second = d.getSeconds();
-	if(second < 10){second = "0" + second;}
-	var dateString = d.getFullYear() + "-" + mon + "-" + day + " " + hour + ":" + minute + ":" + second;
-
-	if(!data.Index){data.Index = 0;}
-	data.Index++;
-
-	var newObj = {};
-	newObj["Amount"] 	= amount;
-	newObj["Name"] 		= name;
-	newObj["Cost"]		= cost;
-	newObj["Date"] 		= dateString;
-	newObj["BORS"] 		= bors;
-	newObj['ID']   		= data.Index;
-	data.entries.push(newObj);
-
-	AddRow(newObj);
-});
-
-function AddRow(obj){
-	var tr = $(document.createElement("tr")).insertAfter(table.children()[0]);
-	var td = $(document.createElement("td")).css({"border": "1px solid black", "padding": "10px"});
-	td.clone().html(obj.ID).appendTo(tr);
-	td.clone().html(obj.Amount).appendTo(tr);
-	td.clone().html(obj.Name).appendTo(tr);
-	td.clone().html(obj.Cost).appendTo(tr);
-	td.clone().html(Math.floor(obj.Cost / obj.Amount)).appendTo(tr);
-	td.clone().html(obj.BORS).appendTo(tr);
-	td.clone().html(obj.Date).appendTo(tr);
-	var functionsTd  = td.clone().appendTo(tr);
-	var remButton = BuildDeleteButton(obj.ID);
-	remButton.appendTo(functionsTd);
-
-	var linkButton = BuildLinkButton(obj.ID);
-	linkButton.appendTo(functionsTd);
-
-}
-
-function BuildLinkButton(ID){
-	var linkButton = $(document.createElement("button"))
-	.attr("id", "button-link-" + ID)
-	.css("margin", "5px")
-	.text("Link")
-	.on("click", function(){
-		var id = $(this).attr("id").match(/(\d+)$/);
-		if(id){id=id[1];}
-		else{return;}
-		var item = $(this).parent().parent().children()[2].innerHTML;
-		var bors = $(this).parent().parent().children()[5].innerHTML;
-		if($(this).text() == "Link"){
-			var select = $(document.createElement("select")).attr("id", "linkSelect");
-			for(var i=0;i<data.entries.length;i++){
-				if(data.entries[i].Name == item && data.entries[i].ID != id && data.entries[i].BORS != bors){
-					var e = data.entries[i];
-					console.log("MATCH: ", e);
-					var opt = $(document.createElement("option")).val(e.ID)
-					.html(e.ID + " | x" + e.Amount + " (" + e.Cost + ") " + e.Name)
-					.appendTo(select);
-				}
-			}
-			if(select.children().length > 0){
-				select.insertAfter($(this));
-				$(this).text("Confirm");
-			}
-			else{
-				alert("No items to link!");
-				console.log("No other items found!");
-			}
-			console.log("ITEM: " + item + " | ID: " + id);
-		}
-		else if($(this).text() == "Confirm"){
-			var linkId = $("#linkSelect").find(":selected").val();
-			var counter = 0;
-			console.log("LINKED ID:" , linkId);
-			for(var i=0;i<data.entries.length;i++){
-				if(data.entries[i].ID == linkId){
-					data.entries[i].Linked = id;
-					counter++;
-				}
-				else if(data.entries[i].ID == id){
-					data.entries[i].Linked = linkId;
-					counter++;
-				}
-			}
-			if(counter == 2){
-				alert("Linked " + linkId + " to " + id);
-				$(this).text("Link");
-				$("#linkSelect").remove();
-			}
-			else{
-				alert("Something went wrong when linking " + linkId + " to " + id);
-				$(this).text("Link");
-				$("#linkSelect").remove();
-			}
-		}
-	});
-	return linkButton;
-}
-
-function BuildDeleteButton(ID){
-	var removeButton = $(document.createElement("button"))
-	.attr("id", "button-remove-" + ID)
-	.css("margin", "5px")
-	.text("Remove")
-	.on("click", function(){
-		var id = $(this).attr("id").match(/(\d+)$/);
-		if(id){id=id[1];}
-		else{return;}
-		for(var i=0;i<data.entries.length;i++){
-			if(data.entries[i].ID == id){
-				data.entries.splice(i, 1);
-				i=data.entries.length;
-			}
-		}
-		SaveData();
-		$(this).parent().parent().remove();
-	});
-	return removeButton;
-}
-
-function BuildTable(d){
-	console.log("Starting to generate table..");
-	table.find("tr").each(function(index, obj){ //Clear table except top row
-		if(index > 0){
-			table.find(obj).remove();
-		}
-	});
-	for(var i=d.entries.length - 1;i>=0;i--){
-		AddRow(d.entries[i]);
-	}
-
-	$(table).css({'border': "1px solid black", "padding": "10px"});
-	$(table).find("td").css({'border': "1px solid black", "padding": "10px"});
-	$(table).find("th").css({'border': "2px solid grey", "padding": "10px"});
-}
-</script>
+<script src="./js/main.js"></script>
 
 
 </body>

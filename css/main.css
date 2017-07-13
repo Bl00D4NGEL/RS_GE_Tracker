@@ -1,0 +1,11 @@
+.menuButton {
+	float: left;
+	width: 10%;
+	padding: 10px;
+	margin-bottom: 10px;
+	background-color: green;
+	border: 1px solid grey;
+}
+.active {
+	background-color: lime;
+}
